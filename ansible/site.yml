@@ -1,43 +1,29 @@
----
 - name: Konfiguracja serwera WWW
   hosts: web
-  become: true
-  gather_facts: true
-
-  vars:
-    html_file: /var/www/html/index.html
-
+  become: yes
   tasks:
-    - name: Aktualizacja cache apt
+    - name: Aktualizacja apt i instalacja Python 3
       apt:
-        update_cache: yes
-      when: ansible_os_family == "Debian"
-
-    - name: Instalacja nginx
-      apt:
-        name: nginx
+        name: 
+          - python3
+          - python3-pip
+          - nginx
         state: present
-      notify: Restart nginx
+        update_cache: yes
 
-    - name: Utworzenie strony index.html
+    - name: Tworzenie pliku index.html
       copy:
-        dest: "{{ html_file }}"
-        content: |
-          <html>
-          <body>
-          <h1>Serwer z Ansible 🚀</h1>
-          <p>Data: {{ ansible_date_time.date }} {{ ansible_date_time.time }}</p>
-          </body>
-          </html>
-      notify: Restart nginx
+        dest: /var/www/html/index.html
+        content: "<h1>Strona działa!</h1>"
+      notify:
+        - restart nginx
 
   handlers:
-    - name: Restart nginx
-      shell: |
-        if pgrep nginx; then
-          nginx -s reload
-        else
-          nginx
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
         fi
       args:
         warn: false
