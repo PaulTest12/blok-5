@@ -19,15 +19,10 @@ jobs:
           terraform_version: 1.6.0
 
       - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init
+        run: cd terraform && terraform init -upgrade
 
       - name: Terraform Apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve
+        run: cd terraform && terraform apply -auto-approve
 
       - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i ansible/hosts ansible/site.yml
+        run: ansible-playbook -i ansible/hosts ansible/site.yml
