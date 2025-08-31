@@ -1,0 +1,43 @@
+---
+- name: Konfiguracja serwera WWW
+  hosts: web
+  become: true
+  gather_facts: true
+
+  vars:
+    html_file: /var/www/html/index.html
+
+  tasks:
+    - name: Aktualizacja cache apt
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Instalacja nginx
+      apt:
+        name: nginx
+        state: present
+      notify: Restart nginx
+
+    - name: Utworzenie strony index.html
+      copy:
+        dest: "{{ html_file }}"
+        content: |
+          <html>
+          <body>
+          <h1>Serwer z Ansible 🚀</h1>
+          <p>Data: {{ ansible_date_time.date }} {{ ansible_date_time.time }}</p>
+          </body>
+          </html>
+      notify: Restart nginx
+
+  handlers:
+    - name: Restart nginx
+      shell: |
+        if pgrep nginx; then
+          nginx -s reload
+        else
+          nginx
+        fi
+      args:
+        warn: false
