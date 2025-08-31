@@ -1,27 +1,33 @@
-name: Makefile CI
+name: Terraform + Ansible CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  build:
-
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-    - name: configure
-      run: ./configure
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
 
-    - name: Install dependencies
-      run: make
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
 
-    - name: Run check
-      run: make check
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve
 
-    - name: Run distcheck
-      run: make distcheck
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i ansible/hosts ansible/site.yml
